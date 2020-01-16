@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>user example</title>
+    <script src="https://unpkg.com/vue"></script>
+    <link rel="stylesheet" href="login.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+        integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+        integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+        integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+        crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+</head>
+
+
+<div class="wrapper fadeInDown">
+    <div id="formContent">
+        <!-- Tabs Titles -->
+
+        <!-- Icon -->
+        <div class="fadeIn first">
+            <img src=".\images\logo.png" id="icon" alt="User Icon" />
+        </div>
+
+        <!-- Login Form -->
+        <form name="Registration" method="POST" action="user.html">
+            <div id="signupForm">
+                <input type='email' v-model='email' placeholder='email'>
+                <input type='password' v-model='password' placeholder='password'><br />
+                <!-- Radio Buttons -->
+                <div class="form-check">
+                    <label class="radio-inline" class="fadeIn fourth" for="option1">
+                        <input type="radio" class="fadeIn fourth" id="option1" name="option1" value="student"
+                            v-model='userType'>
+                        Student
+                    </label>
+                </div>
+                <div class="form-check">
+                    <label class="radio-inline" class="fadeIn fourth" for="option2">
+                        <input type="radio" class="fadeIn fourth" id="option2" name="option2" value="provider"
+                            v-model='userType'>
+                        Provider
+                    </label>
+                </div>
+                <input type="submit" class="fadeIn fourth" v-on:click='signup()' value="Register" />
+            </div>
+        </form>
+
+        <!-- Remind Passowrd -->
+        <div id="formFooter">
+            <a class="underlineHover" href="#">Forgot Password?</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    var userform = new Vue({
+        el: "#formContent",
+        data: {
+            currentUser: '',
+            email: '',
+            password: '',
+            userMessage: '',
+            userType: ''
+        },
+        methods: {
+            signup: function () {
+                var UserArray = [];
+                var newUsers = {
+                    'email': this.email,
+                    'password': this.password,
+                    'usertype': this.userType
+                }
+                alert('OK');
+                this.userMessage = '';
+                if (!this.email) {
+                    this.userMessage = 'error: empty email';
+                    alert('ERROR - EMPTY EMAIL');
+                }
+                else if (!this.password) {
+                    this.userMessage = 'error: empty password';
+                    alert('ERROR - EMPTY PASSWORD');
+                }
+                else{
+                    alert('NOT EMPTY VALUES');
+                    var getUsers = JSON.parse(localStorage.getItem("users"));
+                   alert(getUsers);
+
+                    if (!getUsers) {
+                        alert('EMPTY LOCAL STORAGE');
+                        UserArray.push(newUsers)
+                        localStorage.setItem('users', JSON.stringify(UserArray));
+                    }
+                    else {
+                        alert('NOT EMPTY LOCAL STORAGE');
+                        for (i=0; i < getUsers.length; i++){
+                            alert(getUsers.length);
+                            alert(this.email);
+                            alert(getUsers[i].email);
+                    //Check if user exists
+                            if (this.email === getUsers[i].email){
+                                alert(`Email ${getUsers[i].email} already exists!`);
+                                //stop loop from checking the rest.
+                            break;
+                         }
+                        }
+                            getUsers.push(newUsers);
+                            console.log("after push");
+                            localStorage.setItem('users', JSON.stringify(getUsers));
+                         }
+                    }  
+        }
+        }
+    })
+</script>
+
+</html>

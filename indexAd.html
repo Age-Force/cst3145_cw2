@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>cw1 - search and filter</title>
+    <script src="https://unpkg.com/vue"></script>
+<!--<script src="courses.js"></script> -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <h1>THIS IS THE ADMINISTRATION SCREEN</h1>
+    <div id="searchFilter">
+        {{ getCurrentUser()}}
+        <button @click='signout'>Sign out</button>
+        <!-- search -->
+        Search <input v-model='term'><br><br>
+
+        <!-- filter -->
+        <select multiple v-model='userLocations'>
+            <option v-for='location in locations'>
+                {{location}}
+            </option>
+        </select>
+        <button v-on:click='reset'>reset</button><br>
+
+        <!-- results -->
+        <div v-for='(course, index) in results' class='course'>
+            <span v-model: index> {{ index }} </span>
+            <ul>
+                <li v-for='(value, key) in course'>
+                    {{key}}: {{value}}
+                </li>
+            </ul>
+        <input type="button" id="updateItem" value="Update" v-on:click="updateItem(index)" />
+        </div>
+
+        <div class= "course" id="newCourse">
+            <h3> Add new Item </h3>
+            <input type="text" placeholder="Topic"  v-model='topic'  /><br />
+            <input type="text" placeholder="location"  v-model='location'  /><br />
+            <input type="text" placeholder="price"  v-model='price'  /><br />
+            <input type="text" v-model='current' disabled/><br />
+            <input type="button" value='Add New' v-on:click='addCourse()' />
+        </div>
+
+        <div class= "course" id="newCourse">
+            <h3> Update Existing Item </h3>
+            <input type="text" placeholder="Topic" id="updTop"  v-bind="updTop" /><br />
+            <input type="text" placeholder="location" id="updLoc"  v-bind="updLoc" /><br />
+            <input type="text" placeholder="price" id="updPrc"  v-bind="updPrc" /><br />
+            <input type="text" v-model='current' disabled/><br />
+            <input type="button" value='Update' v-on:click='placeUpdate(index)' />
+        </div>
+    </div>
+
+    <script>
+        var searchApp = new Vue({
+            el: '#searchFilter',
+            data: {
+                term: '',
+                userLocations: [],
+                current: this.current,
+                topic:'',
+                location: '',
+                price: '',
+                index: '',
+                updTop: '',
+                updPrc:'',
+                updLoc: ''
+            },
+            methods: {
+                reset: function () {
+                    this.userLocations = [];
+                },
+                signout: function () {
+                    this.currentUser = '';
+                    this.email = '';
+                    this.password = '';
+                    window.location.href='user.html';
+                },
+                getCurrentUser: function () {
+                    var url_string = window.location.href
+                    var url = new URL(url_string);
+                    this.current = url.searchParams.get("user");
+                    console.log(this.current);
+                    return this.current;
+                },
+                addCourse: function(){
+                            //SAVE Rating under Course by User.
+                               
+                                var newCourse = {
+                                        'topic': this.topic,
+                                        'location': this.location,
+                                        'price': this.price,
+                                        'provider': this.current
+                                    };
+                                    
+                                
+                                var getCourses = JSON.parse(localStorage.getItem('courses'));
+                               console.log (getCourses);
+                                var data = [];
+
+                                if(getCourses == null){
+                                    alert('NULL');
+                                    data.push(newCourse);
+                                    localStorage.setItem('courses', JSON.stringify(data));
+                                }else{
+                                    alert('NOT NULL');
+                                            getCourses.push(newCourse);
+                                            localStorage.setItem('courses', JSON.stringify(getCourses));
+                                }
+                            },
+                updateItem: function(index){
+                   
+                    // Enable Update Button on form
+              this.index = index
+
+                    var getCourses = JSON.parse(localStorage.getItem('courses'));
+                    var selected = getCourses[index];
+                    console.log(getCourses[index]);
+
+                    var topicTxt = document.getElementById('updTop');
+                    topicTxt.value = selected.topic;
+
+                    var locationTxt = document.getElementById('updLoc');
+                   locationTxt.value = selected.location;
+
+                    var priceTxt = document.getElementById('updPrc');
+                    priceTxt.value = selected.price;
+
+                    return index;
+                },
+
+                placeUpdate: function(index){
+                    alert(this.index);
+
+                    var updCourse = {
+                                        'topic':  document.getElementById('updTop').value,
+                                        'location':  document.getElementById('updLoc').value,
+                                        'price': document.getElementById('updPrc').value,
+                                        'provider': this.current
+                                    };
+                    
+                                     
+                    var getCourses = JSON.parse(localStorage.getItem('courses'));
+                             
+                               getCourses.splice(this.index, 1, updCourse); 
+                    }     
+                },
+            beforeMount() {
+                    this.getCurrentUser();
+                    return this.current;
+                },
+            computed: {
+                locations: function () {
+                    // update option list
+                    return [...new Set(this.results.map(x => x.location))]
+                },
+                results: function () {
+                    var courses = JSON.parse(localStorage.getItem('courses'));
+                    //This part can be also done beforeMount.  
+                    //Therefore before loading page check if courses are in LocalStorage, if empty input a course value
+
+                    if (courses === null){
+                        
+                        var newCourse = []
+                        var newEntry = {
+                                        'topic': "test",
+                                        'location': "test1",
+                                        'price': "123",
+                                        'provider': this.current
+                                    };
+                        newCourse.push(newEntry);
+                        alert(newCourse);
+                        localStorage.setItem('courses', JSON.stringify(newCourse));
+                        location.reload();
+                    }
+                    else
+                    {
+                    return courses.filter(course => {
+                        // search condition
+
+                        var searchCourse = course.topic.includes(this.term);
+
+                        // filter condition
+                        var filterCourse = this.userLocations.length == 0 ||
+                            this.userLocations.includes(course.location);
+
+                        // combine the result
+                        return searchCourse && filterCourse;
+                    })
+                }
+            }  
+            },
+        });
+    </script>
+</body>
+
+</html>
